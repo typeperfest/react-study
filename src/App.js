@@ -1,4 +1,4 @@
-import React, {useRef, useState} from "react";
+import React, {useMemo, useRef, useState} from "react";
 import './styles/app.css'
 import PostList from "./Components/PostList";
 import MyButton from "./Components/UI/button/MyButton";
@@ -17,15 +17,17 @@ function App() {
   const [selectedSort, setSelectedSort] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  function getSortedPosts() {
+  const sortedPosts = useMemo( () => {
       console.log('ОБРАБОТКА')
       if(selectedSort) {
           return [...posts].sort((a, b) => a[selectedSort].localeCompare(b[selectedSort]))
       }
       return posts
-  }
+  }, [selectedSort, posts]);
 
-  const sortedPosts = getSortedPosts()
+  const sortedAndSearchedPosts = useMemo( () => {
+      return sortedPosts.filter(post => post.title.toLowerCase().includes(searchQuery))
+  }, [searchQuery, sortedPosts]);
 
   const createPost = (newPost) => {
       setPosts([...posts, newPost])
@@ -59,9 +61,9 @@ function App() {
                 ]}
             />
         </div>
-        {posts.length !== 0
+        {sortedAndSearchedPosts.length !== 0
             ?
-            <PostList remove={removePost} posts={sortedPosts} title="Посты о JS"/>
+            <PostList remove={removePost} posts={sortedAndSearchedPosts} title="Список постов"/>
             :
             <h1 style={{textAlign: 'center'}}>
                 Посты не найдены
